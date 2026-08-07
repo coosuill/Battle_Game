@@ -1,0 +1,25 @@
+name: Final duel behaviour
+on: push
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch game
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('var target = enemy.target;\n    var seekPickup = pickupInfo.pickup && (','var target = enemy.target;\n    var finalDuel = battleState.fighters.filter(function(x){ return x.alive; }).length === 2;\n    var seekPickup = !finalDuel && pickupInfo.pickup && (',1)
+          s=s.replace('if(d > preferred + 15) { tx = target.x; ty = target.y; }','if(finalDuel) { tx = target.x; ty = target.y; }\n      else if(d > preferred + 15) { tx = target.x; ty = target.y; }',1)
+          p.write_text(s)
+      - name: Commit
+        run: |
+          git config user.name github-actions
+          git config user.email actions@github.com
+          git add index.html
+          git commit -m "Make final two hunt each other" || exit 0
+          git push
