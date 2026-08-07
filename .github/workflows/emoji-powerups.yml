@@ -1,0 +1,142 @@
+name: Apply emoji power-ups
+
+on:
+  push:
+    paths:
+      - '.github/workflows/emoji-powerups.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Replace pickup symbols and remove key
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('index.html')
+          s = path.read_text(encoding='utf-8')
+          before = s
+
+          # Remove the power-up key from the live overlay.
+          exact_key = '''var powerKey = '<div class="power-key"><strong>Power-ups:</strong> + Health · » Speed · S Shield · B Burst · R Bazooka · ! Banana</div>';'''
+          s = s.replace(exact_key, "var powerKey = '';")
+          s = re.sub(r'\.tv-mode \.overlay \.power-key\{[^}]*\}', '', s)
+
+          pairs = [
+              ('health', '+', '❤️'),
+              ('speed', '»', '⚡'),
+              ('shield', 'S', '🛡️'),
+              ('burst', 'B', '💥'),
+              ('bazooka', 'R', '🚀'),
+              ('banana', '!', '🍌'),
+          ]
+          counts = {k: 0 for k, _, _ in pairs}
+
+          def swap_literals(text):
+              for kind, old, new in pairs:
+                  for q in ('"', "'"):
+                      old_lit = q + old + q
+                      new_lit = q + new + q
+                      n = text.count(old_lit)
+                      if n:
+                          text = text.replace(old_lit, new_lit)
+                          counts[kind] += n
+              return text
+
+          # Most versions use a single ternary/variable statement to select
+          # the pickup glyph. Restrict replacement to statements that clearly
+          # reference the pickup kind choices, so unrelated letters are safe.
+          stmt_re = re.compile(r'\b(?:var|let|const)\s+\w+\s*=\s*[^;]{0,3000};', re.S)
+          def patch_stmt(m):
+              text = m.group(0)
+              low = text.lower()
+              kind_hits = sum(1 for k, _, _ in pairs if k in low)
+              symbol_hits = sum(text.count('"'+o+'"') + text.count("'"+o+"'") for _, o, _ in pairs)
+              if kind_hits >= 4 and symbol_hits >= 4:
+                  return swap_literals(text)
+              return text
+          s = stmt_re.sub(patch_stmt, s)
+
+          # Also handle a direct canvas fillText ternary if the renderer uses one.
+          fill_re = re.compile(r'\b\w+\.fillText\([^;]{0,3000}\);', re.S)
+          def patch_fill(m):
+              text = m.group(0)
+              low = text.lower()
+              kind_hits = sum(1 for k, _, _ in pairs if k in low)
+              symbol_hits = sum(text.count('"'+o+'"') + text.count("'"+o+"'") for _, o, _ in pairs)
+              if kind_hits >= 4 and symbol_hits >= 4:
+                  return swap_literals(text)
+              return text
+          s = fill_re.sub(patch_fill, s)
+
+          # Handle object maps such as {health:"+", speed:"»", ...}.
+          for kind, old, new in pairs:
+              pat = re.compile(r'(' + re.escape(kind) + r'\s*:\s*)(["\'])' + re.escape(old) + r'\2', re.I)
+              def map_repl(m, kind=kind, new=new):
+                  counts[kind] += 1
+                  return m.group(1) + m.group(2) + new + m.group(2)
+              s = pat.sub(map_repl, s)
+
+          # Handle explicit ternary/switch branches one by one.
+          for kind, old, new in pairs:
+              tern = re.compile(r'(\.kind\s*===?\s*["\']' + re.escape(kind) + r'["\']\s*\?\s*)(["\'])' + re.escape(old) + r'\2', re.I)
+              def tern_repl(m, kind=kind, new=new):
+                  counts[kind] += 1
+                  return m.group(1) + m.group(2) + new + m.group(2)
+              s = tern.sub(tern_repl, s)
+
+              switch = re.compile(r'(case\s*["\']' + re.escape(kind) + r'["\']\s*:\s*(?:\w+\s*=\s*)?)(["\'])' + re.escape(old) + r'\2', re.I)
+              def switch_repl(m, kind=kind, new=new):
+                  counts[kind] += 1
+                  return m.group(1) + m.group(2) + new + m.group(2)
+              s = switch.sub(switch_repl, s)
+
+          missing = [k for k, n in counts.items() if n == 0]
+          print('Emoji replacement counts:', counts)
+          if missing:
+              print('Could not safely locate pickup glyphs for:', missing)
+              for kind in missing:
+                  for mm in list(re.finditer(kind, s, re.I))[:4]:
+                      a=max(0,mm.start()-240); b=min(len(s),mm.end()+420)
+                      print('\nCONTEXT', kind, '\n', s[a:b].replace('\n',' '))
+              raise SystemExit(2)
+
+          # The old visible legend must be gone.
+          if 'Power-ups:</strong>' in s or '+ Health · » Speed' in s:
+              raise SystemExit('Power-up key still present')
+
+          if s == before:
+              raise SystemExit('No changes made')
+
+          path.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Check game JavaScript
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          Path('/tmp/battle-check.js').write_text('\n'.join(scripts),encoding='utf-8')
+          PY
+          node --check /tmp/battle-check.js
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/emoji-powerups.yml
+          git add index.html .github/workflows/emoji-powerups.yml
+          git commit -m "Use emoji icons for battle power-ups"
+          git push
