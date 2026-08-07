@@ -37,7 +37,7 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   backdrop-filter:blur(3px);z-index:3;pointer-events:none;overflow:hidden
 }
 .overlay-title{text-align:center;color:var(--gold);font-size:12px;font-weight:bold;margin-bottom:4px}
-
+.power-key{font-size:9px;line-height:1.25;text-align:center;color:#dce8df;background:rgba(255,255,255,.05);border-radius:7px;padding:4px 5px;margin-bottom:5px;white-space:normal}
 .overlay-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .overlay-section{background:rgba(255,255,255,.045);border-radius:8px;padding:6px 8px;min-width:0}
 .overlay-section h3{margin:0 0 5px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.45px}
@@ -211,9 +211,6 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   .live-row,.live-row.team-mode{grid-template-columns:22px minmax(72px,1fr) auto auto auto auto}
   .optional{display:none}
 }
-</style>
-<style id="battle-silk-tv-style">
-.tv-mode body{padding:3px!important;overflow:hidden!important}.tv-mode .app{gap:4px!important;height:100vh!important}.tv-mode .header{padding:6px 9px!important}.tv-mode h1{font-size:23px!important}.tv-mode .controls{padding:6px 8px!important;gap:6px!important}.tv-mode button,.tv-mode select{min-height:43px!important;font-size:14px!important}.tv-mode button:focus,.tv-mode select:focus{outline:3px solid var(--gold)!important;outline-offset:2px!important}.tv-mode .mode-buttons{display:grid!important;grid-template-columns:repeat(5,minmax(105px,1fr))!important;flex:1 1 100%!important}.tv-mode #goBtn{min-width:180px!important;min-height:50px!important;font-size:17px!important}.tv-mode .main{height:calc(100vh - 164px)!important}.tv-mode .arena-wrap{aspect-ratio:auto!important;height:100%!important;min-height:0!important;max-height:none!important;border-radius:8px!important}.tv-mode .side{display:none!important}.tv-mode .overlay{right:10px!important;top:48px!important;transform:none!important;width:min(31vw,355px)!important;max-height:64%!important;padding:6px 7px!important;backdrop-filter:none!important;background:rgba(3,12,7,.76)!important}.tv-mode .tv-mode .overlay-section{padding:4px 5px!important}.tv-mode .live-list,.tv-mode .score-list,.tv-mode .survivor-list{font-size:10px!important;gap:1px!important}.tv-mode .live-row:nth-child(n+6){display:none!important}.tv-mode .live-row,.tv-mode .live-row.team-mode{grid-template-columns:20px minmax(58px,1fr) auto auto auto!important;gap:3px!important}.tv-mode .live-row .optional{display:none!important}.tv-mode .live-row:first-child{background:rgba(255,209,102,.13)!important;border-radius:6px!important;box-shadow:inset 0 0 0 1px rgba(255,209,102,.45)!important}.tv-mode .commentary{width:auto!important;max-width:560px!important;bottom:12px!important;padding:7px 12px!important;font-size:13px!important;opacity:0!important;transition:opacity .18s!important}.tv-mode .commentary.tv-toast{opacity:1!important}.tv-mode .celebrate:not(.tv-full-results){display:none!important}.tv-mode .celebrate.tv-full-results{display:grid!important;background:rgba(0,0,0,.82)!important;backdrop-filter:none!important}.tv-mode.battle-running .header,.tv-mode.battle-running .controls,.tv-mode.battle-finished .header,.tv-mode.battle-finished .controls{display:none!important}.tv-mode.battle-running body,.tv-mode.battle-finished body{padding:0!important}.tv-mode.battle-running .main,.tv-mode.battle-finished .main,.tv-mode.battle-running .arena-wrap,.tv-mode.battle-finished .arena-wrap{height:100vh!important}.tv-mode.battle-running .arena-wrap,.tv-mode.battle-finished .arena-wrap{border:0!important;border-radius:0!important}.tv-flash{position:absolute;inset:0;display:none;place-items:center;z-index:15;pointer-events:none;background:rgba(0,0,0,.2);font-size:clamp(62px,13vw,145px);font-weight:900;color:var(--gold);text-shadow:0 5px 20px #000}.tv-flash.show{display:grid}.tv-alive{position:absolute;left:10px;top:48px;z-index:9;padding:6px 9px;border-radius:999px;background:rgba(0,0,0,.7);font-size:13px;font-weight:900}.tv-kill-feed{position:absolute;left:10px;top:86px;z-index:9;width:min(34vw,360px);display:grid;gap:4px}.tv-kill-item{padding:6px 9px;border-radius:8px;background:rgba(0,0,0,.72);font-size:12px;font-weight:800}.tv-final-two{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:11;display:none;gap:10px;align-items:center}.tv-final-two.show{display:flex}.tv-duelist{min-width:150px;padding:7px 12px;border-radius:10px;background:rgba(0,0,0,.78);border:1px solid rgba(255,209,102,.4);font-weight:900;text-align:center}.tv-versus{color:var(--gold);font-weight:900}.tv-result{position:absolute;inset:0;z-index:18;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.82);padding:18px}.tv-result.show{display:flex}.tv-result-card{width:min(82vw,570px);background:linear-gradient(180deg,#203f2c,#102319);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:15px;text-align:center}.tv-result-card h2{margin:0 0 8px;color:var(--gold)}.tv-top-three{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}.tv-place,.tv-summary-stat{padding:8px;border-radius:9px;background:rgba(255,255,255,.06)}.tv-place strong,.tv-summary-stat strong{display:block;color:var(--gold);font-size:16px}.tv-place span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800}.tv-summary-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 12px}.tv-result-actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}.tv-result-actions button{min-width:130px!important;min-height:46px!important}
 </style>
 </head>
 <body>
@@ -1470,7 +1467,7 @@ function renderOverlay(force){
     var survivors = gauntletState.remaining.map(function(m,idx){ return '<div class="survivor-row"><span>'+(idx+1)+'</span><span>'+m.name+'</span><span></span></div>'; });
     sections.push('<div class="overlay-section"><h3>Survivors · Round '+gauntletState.round+'</h3><div class="survivor-list">'+survivors.join('')+'</div></div>');
   }
-  var powerKey = '';
+  var powerKey = '<div class="power-key"><strong>Power-ups:</strong> + Health · » Speed · S Shield · B Burst · R Bazooka · ! Banana</div>';
   overlayEl.innerHTML = '<div class="overlay-title">'+title+'</div>'+powerKey+'<div class="overlay-grid">'+sections.join('')+'</div>';
 }
 
@@ -1523,17 +1520,16 @@ function drawObstacle(o){
   ctx.strokeRect(o.x, o.y, o.w, o.h);
 }
 function drawPickup(p){
-  var fill = "#7ce38a", label = "❤️";
-  if(p.kind==="speed"){ fill="#ffb269"; label="⚡"; }
-  if(p.kind==="shield"){ fill="#8fb8ff"; label="🛡️"; }
-  if(p.kind==="burst"){ fill="#ff8a8a"; label="💥"; }
-  if(p.kind==="bazooka"){ fill="#ff7b54"; label="🚀"; }
-  if(p.kind==="banana"){ fill="#ffe16e"; label="🍌"; }
+  var fill = "#7ce38a", label = "+", textColor = "#113";
+  if(p.kind==="speed"){ fill="#ffb269"; label="»"; textColor="#321"; }
+  if(p.kind==="shield"){ fill="#8fb8ff"; label="S"; textColor="#123"; }
+  if(p.kind==="burst"){ fill="#ff8a8a"; label="B"; textColor="#311"; }
+  if(p.kind==="bazooka"){ fill="#ff7b54"; label="R"; textColor="#321"; }
+  if(p.kind==="banana"){ fill="#ffe16e"; label="!"; textColor="#543"; }
   ctx.fillStyle=fill;
   ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=2; ctx.stroke();
-  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="16px sans-serif";
-  ctx.fillText(label, p.x, p.y+0.5);
+  ctx.fillStyle=textColor; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="bold 11px Arial"; ctx.fillText(label, p.x, p.y+0.5);
 }
 function drawProjectile(pr){
   ctx.fillStyle=pr.color;
@@ -1640,20 +1636,6 @@ loadImages(MEMBERS, function(){
   draw();
   renderOverlay(true);
 });
-})();
-</script>
-<script id="battle-silk-tv-script">
-(function(){
-var tv=/silk|aft|fire tv/i.test(navigator.userAgent||'');if(!tv)return;document.documentElement.classList.add('tv-mode');document.body.classList.add('tv-mode');
-var arena=document.querySelector('.arena-wrap'),status=document.getElementById('status'),go=document.getElementById('goBtn'),overlay=document.getElementById('overlay'),commentary=document.getElementById('commentary'),celebrate=document.getElementById('celebrate'),celeClose=document.getElementById('celeClose');if(!arena||!status||!go||!overlay)return;
-function add(c,h){var d=document.createElement('div');d.className=c;if(h)d.innerHTML=h;arena.appendChild(d);return d}var flash=add('tv-flash'),alive=add('tv-alive');alive.textContent='Alive: —';var feed=add('tv-kill-feed'),duel=add('tv-final-two','<div class="tv-duelist" id="tvA">—</div><div class="tv-versus">VS</div><div class="tv-duelist" id="tvB">—</div>'),result=add('tv-result','<div class="tv-result-card"><h2>Battle Result</h2><div class="tv-top-three" id="tvTop"></div><div class="tv-summary-stats" id="tvStats"></div><div class="tv-result-actions"><button id="tvAgain">Battle Again</button><button id="tvFull">Full Results</button><button class="secondary" id="tvMenu">Menu</button></div></div>');
-var cd=0,bypass=0,finalShown=0,last='',toast=0,lastComment='';function say(x,ms){flash.textContent=x;flash.classList.add('show');return new Promise(function(r){setTimeout(function(){flash.classList.remove('show');r()},ms)})}async function start(){cd=1;for(var i=0;i<4;i++){var x=['3','2','1','BATTLE!'][i];await say(x,x==='BATTLE!'?520:650)}bypass=1;go.click();bypass=0;cd=0}go.addEventListener('click',function(e){if(bypass||cd||go.disabled)return;e.preventDefault();e.stopImmediatePropagation();start()},true);
-function rows(){return Array.from(overlay.querySelectorAll('.live-row')).filter(function(r){var n=r.querySelector('.runner-name');return n&&n.textContent.trim()})}function name(r){var n=r&&r.querySelector('.runner-name');return n?n.textContent.trim():''}function hp(r){var h=r&&r.querySelector('.tag.hp');return h?h.textContent.trim():''}function hud(){var a=rows(),team=!!overlay.querySelector('.live-row.team-mode');alive.textContent='Alive: '+a.length;if(team){var t={};a.forEach(function(r){var x=r.querySelector('[class*="team-"]');if(x)t[x.textContent.trim()]=1});alive.textContent+=' · Teams: '+Object.keys(t).length}if(a.length===2){duel.classList.add('show');document.getElementById('tvA').textContent=name(a[0])+' '+hp(a[0]);document.getElementById('tvB').textContent=name(a[1])+' '+hp(a[1]);if(!finalShown){finalShown=1;say('FINAL TWO',900)}}else{duel.classList.remove('show');if(a.length>2)finalShown=0}}new MutationObserver(hud).observe(overlay,{childList:true,subtree:true,characterData:true});hud();
-function kill(x){var d=document.createElement('div');d.className='tv-kill-item';d.textContent=x;feed.prepend(d);while(feed.children.length>3)feed.removeChild(feed.lastChild);setTimeout(function(){if(d.parentNode)d.remove()},5000)}if(commentary)new MutationObserver(function(){var x=commentary.textContent.trim();if(!x||x===lastComment)return;lastComment=x;commentary.classList.add('tv-toast');clearTimeout(toast);toast=setTimeout(function(){commentary.classList.remove('tv-toast')},1900);if(/eliminat|knock.?out|takes out|ko/i.test(x))kill(x);if(/bazooka/i.test(x))say('BAZOOKA! 🚀',650)}).observe(commentary,{childList:true,subtree:true,characterData:true});
-function results(){var names=[];document.querySelectorAll('#reportTable .report-name').forEach(function(n){if(n.textContent.trim())names.push(n.textContent.trim())});if(!names.length)names=rows().map(name);var top=document.getElementById('tvTop');top.innerHTML='';names.slice(0,3).forEach(function(n,i){var d=document.createElement('div');d.className='tv-place';d.innerHTML='<strong>'+(i+1)+'</strong><span></span>';d.querySelector('span').textContent=n;top.appendChild(d)});var st=document.getElementById('tvStats');st.innerHTML='';Array.from(document.querySelectorAll('#reportSummary .report-stat')).slice(0,3).forEach(function(n){var d=document.createElement('div');d.className='tv-summary-stat';d.innerHTML=n.innerHTML;st.appendChild(d)});result.classList.add('show')}
-function sync(){var x=(status.textContent||'').toLowerCase(),run=/running|underway|fight/.test(x)&&!/complete|winner|finished/.test(x),done=/winner|complete|finished|champion/.test(x);document.documentElement.classList.toggle('battle-running',run);document.body.classList.toggle('battle-running',run);document.documentElement.classList.toggle('battle-finished',done);document.body.classList.toggle('battle-finished',done);if(run&&x!==last){result.classList.remove('show');finalShown=0}if(done&&x!==last)setTimeout(results,80);last=x}new MutationObserver(sync).observe(status,{childList:true,subtree:true,characterData:true});sync();if(celebrate)new MutationObserver(function(){if(celebrate.classList.contains('show')&&!celebrate.classList.contains('tv-full-results'))setTimeout(results,60)}).observe(celebrate,{attributes:true,attributeFilter:['class']});
-document.getElementById('tvAgain').onclick=function(){result.classList.remove('show');if(!go.disabled)go.click()};document.getElementById('tvFull').onclick=function(){result.classList.remove('show');if(celebrate){celebrate.classList.add('tv-full-results','show')}};document.getElementById('tvMenu').onclick=function(){result.classList.remove('show');document.documentElement.classList.remove('battle-finished');document.body.classList.remove('battle-finished')};if(celeClose)celeClose.addEventListener('click',function(){if(celebrate)celebrate.classList.remove('tv-full-results')});
-document.addEventListener('keydown',function(e){if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)||document.documentElement.classList.contains('battle-running'))return;var a=Array.from(document.querySelectorAll('button:not([disabled]),select:not([disabled]),input[type=range]:not([disabled])')).filter(function(x){return x.offsetParent!==null});if(!a.length)return;var i=a.indexOf(document.activeElement);if(i<0)i=0;var d=(e.key==='ArrowLeft'||e.key==='ArrowUp')?-1:1;a[(i+d+a.length)%a.length].focus();e.preventDefault()});
 })();
 </script>
 </body>
