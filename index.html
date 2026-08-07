@@ -29,6 +29,7 @@ select{border:1px solid rgba(255,255,255,.16);background:#0b1d13;color:#fff;bord
 .arena-wrap{position:relative;width:100%;aspect-ratio:18/8;min-height:420px;max-height:82vh;overflow:hidden}
 canvas{display:block;width:100%;height:100%;border-radius:14px}
 .banner{position:absolute;left:14px;top:12px;z-index:4;padding:6px 10px;border-radius:999px;background:rgba(0,0,0,.65);font-weight:bold;font-size:13px}
+.bazooka-banner{position:absolute;left:14px;top:48px;z-index:5;display:none;padding:7px 11px;border-radius:999px;background:rgba(178,72,0,.90);border:1px solid rgba(255,190,90,.55);color:#fff;font-weight:900;font-size:13px;box-shadow:0 3px 12px rgba(0,0,0,.28)}
 .commentary{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:min(94%,900px);padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.72);text-align:center;font-size:14px;font-weight:bold;z-index:4}
 .overlay{
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
@@ -37,7 +38,6 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   backdrop-filter:blur(3px);z-index:3;pointer-events:none;overflow:hidden
 }
 .overlay-title{text-align:center;color:var(--gold);font-size:12px;font-weight:bold;margin-bottom:4px}
-.power-key{font-size:9px;line-height:1.25;text-align:center;color:#dce8df;background:rgba(255,255,255,.05);border-radius:7px;padding:4px 5px;margin-bottom:5px;white-space:normal}
 .overlay-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .overlay-section{background:rgba(255,255,255,.045);border-radius:8px;padding:6px 8px;min-width:0}
 .overlay-section h3{margin:0 0 5px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.45px}
@@ -260,6 +260,7 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
     <div class="arena-wrap">
       <canvas id="arenaCanvas"></canvas>
       <div class="banner" id="status">Ready</div>
+      <div class="bazooka-banner" id="bazookaBanner"></div>
       <div class="overlay" id="overlay"></div>
       <div class="commentary" id="commentary">Ready</div>
     </div>
@@ -643,7 +644,7 @@ function randomPickupKind(boostOnly){
     if(rb < 0.34) return "speed";
     if(rb < 0.65) return "shield";
     if(rb < 0.88) return "burst";
-    if(rb < 0.92) return "banana";
+    if(rb < 0.954) return "banana";
     return "bazooka";
   }
   var r = Math.random();
@@ -651,7 +652,7 @@ function randomPickupKind(boostOnly){
   if(r < 0.48) return "speed";
   if(r < 0.63) return "shield";
   if(r < 0.78) return "burst";
-  if(r < 0.92) return "banana";
+  if(r < 0.97) return "banana";
   return "bazooka";
 }
 function spawnPickup(forceX, forceY, forcedKind, boostOnly){
@@ -799,7 +800,7 @@ function launchProjectile(owner, target){
   if(owner.bazookaShots > 0){
     owner.bazookaShots -= 1;
     launchProjectileAtAngle(owner, angle, 82, owner.damage * 5, "rocket");
-    setCommentary(owner.name + " fires the BAZOOKA!");
+    setCommentary("🚀 " + owner.name + " FIRES THE BAZOOKA!");
     return;
   }
   if(owner.bulletBoost > 0.2){
@@ -907,7 +908,7 @@ function applyPickupToFighter(f,p){
   if(p.kind==="bazooka"){
     f.bazookaShots += 1;
     f.bazookaPickups += 1;
-    setCommentary(f.name + " picks up the BAZOOKA!");
+    setCommentary("🚀 " + f.name + " HAS THE BAZOOKA!");
     return;
   }
   if(p.kind==="banana"){
@@ -1432,7 +1433,18 @@ function currentOrder(){
     return a.place - b.place;
   });
 }
+function renderBazookaBanner(){
+  var el=document.getElementById("bazookaBanner");
+  if(!el) return;
+  var holders=(battleState && battleState.fighters ? battleState.fighters : []).filter(function(f){ return f.alive && f.bazookaShots > 0; });
+  if(!holders.length){ el.style.display="none"; el.textContent=""; return; }
+  var names=holders.map(function(f){ return f.name; }).join(" & ");
+  el.textContent="🚀 " + names + (holders.length===1 ? " HAS THE BAZOOKA" : " HAVE THE BAZOOKA");
+  el.style.display="block";
+}
+
 function renderOverlay(force){
+  renderBazookaBanner();
   if(!force && performance.now() - overlayRenderAt < 180) return;
   overlayRenderAt = performance.now();
   if(mode==="records") { overlayEl.style.display="none"; return; }
@@ -1467,7 +1479,7 @@ function renderOverlay(force){
     var survivors = gauntletState.remaining.map(function(m,idx){ return '<div class="survivor-row"><span>'+(idx+1)+'</span><span>'+m.name+'</span><span></span></div>'; });
     sections.push('<div class="overlay-section"><h3>Survivors · Round '+gauntletState.round+'</h3><div class="survivor-list">'+survivors.join('')+'</div></div>');
   }
-  var powerKey = '<div class="power-key"><strong>Power-ups:</strong> + Health · » Speed · S Shield · B Burst · R Bazooka · ! Banana</div>';
+  var powerKey = '';
   overlayEl.innerHTML = '<div class="overlay-title">'+title+'</div>'+powerKey+'<div class="overlay-grid">'+sections.join('')+'</div>';
 }
 
@@ -1520,16 +1532,17 @@ function drawObstacle(o){
   ctx.strokeRect(o.x, o.y, o.w, o.h);
 }
 function drawPickup(p){
-  var fill = "#7ce38a", label = "+", textColor = "#113";
-  if(p.kind==="speed"){ fill="#ffb269"; label="»"; textColor="#321"; }
-  if(p.kind==="shield"){ fill="#8fb8ff"; label="S"; textColor="#123"; }
-  if(p.kind==="burst"){ fill="#ff8a8a"; label="B"; textColor="#311"; }
-  if(p.kind==="bazooka"){ fill="#ff7b54"; label="R"; textColor="#321"; }
-  if(p.kind==="banana"){ fill="#ffe16e"; label="!"; textColor="#543"; }
+  var fill = "#7ce38a", label = "❤️";
+  if(p.kind==="speed"){ fill="#ffb269"; label="⚡"; }
+  if(p.kind==="shield"){ fill="#8fb8ff"; label="🛡️"; }
+  if(p.kind==="burst"){ fill="#ff8a8a"; label="💥"; }
+  if(p.kind==="bazooka"){ fill="#ff7b54"; label="🚀"; }
+  if(p.kind==="banana"){ fill="#ffe16e"; label="🍌"; }
   ctx.fillStyle=fill;
   ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=2; ctx.stroke();
-  ctx.fillStyle=textColor; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="bold 11px Arial"; ctx.fillText(label, p.x, p.y+0.5);
+  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="16px Arial, sans-serif";
+  ctx.fillText(label, p.x, p.y+0.5);
 }
 function drawProjectile(pr){
   ctx.fillStyle=pr.color;
