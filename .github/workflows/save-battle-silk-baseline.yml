@@ -1,0 +1,24 @@
+name: Save Battle Silk baseline
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Save baseline tag
+        run: git tag battle-silk-baseline-2026-08-07 475c83a91d9cbdd9df1ec7c0c8a61e59ec2a8410 || true
+      - name: Push baseline tag
+        run: git push origin battle-silk-baseline-2026-08-07 || true
+      - name: Remove helper workflow
+        run: rm -f .github/workflows/save-battle-silk-baseline.yml
+      - name: Commit cleanup
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Remove battle baseline helper workflow" || true
+          git push origin main
