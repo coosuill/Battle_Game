@@ -1,0 +1,67 @@
+name: Fix Silk battle summary scrolling
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make summary scrollable in Silk
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          old = '''.celebrate{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:20}
+.celebrate.show{display:grid}
+.celebrate-card{
+  width:min(96vw,1100px);
+  max-height:90vh;
+  padding:16px;
+  text-align:center;
+  overflow:auto;
+}'''
+          new = '''.celebrate{
+  position:fixed;inset:0;display:none;
+  align-items:flex-start;justify-items:center;
+  background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:20;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:12px 6px 28px;
+}
+.celebrate.show{display:grid}
+.celebrate-card{
+  width:min(96vw,1100px);
+  max-height:none;
+  min-height:min-content;
+  padding:16px 16px 76px;
+  text-align:center;
+  overflow:visible;
+  margin:auto 0;
+}
+#celeClose{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:30;
+  margin:0 !important;
+  padding:10px 14px;
+  box-shadow:0 3px 12px rgba(0,0,0,.35);
+}'''
+          if old not in s:
+              raise SystemExit('Expected celebration CSS block not found')
+          p.write_text(s.replace(old, new, 1))
+          Path('.github/workflows/silk-summary-fix.yml').unlink()
+          PY
+      - name: Commit Silk summary fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/silk-summary-fix.yml
+          git commit -m "Fix battle summary scrolling in Silk browser"
+          git push
