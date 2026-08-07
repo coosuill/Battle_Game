@@ -965,7 +965,8 @@ function updateBattle(dt){
     var pickupInfo = nearestPickupWanted(f);
     var enemy = nearestEnemy(f);
     var target = enemy.target;
-    var seekPickup = pickupInfo.pickup && (
+    var finalDuel = battleState.fighters.filter(function(x){ return x.alive; }).length === 2;
+    var seekPickup = !finalDuel && pickupInfo.pickup && (
       f.hp < f.maxHp * 0.65 ||
       f.ability==="Collector" ||
       (pickupInfo.pickup.kind==="speed" && f.speedBuff < 0.25) ||
@@ -979,7 +980,8 @@ function updateBattle(dt){
     } else if(target) {
       var preferred = f.preferredDistance;
       var dx = target.x - f.x, dy = target.y - f.y, d = Math.sqrt(dx*dx+dy*dy) || 1;
-      if(d > preferred + 15) { tx = target.x; ty = target.y; }
+      if(finalDuel) { tx = target.x; ty = target.y; }
+      else if(d > preferred + 15) { tx = target.x; ty = target.y; }
       else if(d < preferred - 20) { tx = f.x - dx; ty = f.y - dy; }
       else {
         tx = f.x + -dy * 0.8;
