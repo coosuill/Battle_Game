@@ -32,16 +32,17 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
 .commentary{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:min(94%,900px);padding:8px 12px;border-radius:10px;background:rgba(0,0,0,.72);text-align:center;font-size:14px;font-weight:bold;z-index:4}
 .overlay{
   position:absolute;right:12px;top:50%;transform:translateY(-50%);
-  width:min(34%,420px);max-height:82%;padding:10px 12px;border-radius:12px;
+  width:min(28%,350px);max-height:82%;padding:8px 9px;border-radius:12px;
   background:rgba(4,12,7,.78);border:1px solid rgba(255,255,255,.16);
   backdrop-filter:blur(3px);z-index:3;pointer-events:none;overflow:hidden
 }
-.overlay-title{text-align:center;color:var(--gold);font-size:13px;font-weight:bold;margin-bottom:6px}
+.overlay-title{text-align:center;color:var(--gold);font-size:12px;font-weight:bold;margin-bottom:4px}
+.power-key{font-size:9px;line-height:1.25;text-align:center;color:#dce8df;background:rgba(255,255,255,.05);border-radius:7px;padding:4px 5px;margin-bottom:5px;white-space:normal}
 .overlay-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .overlay-section{background:rgba(255,255,255,.045);border-radius:8px;padding:6px 8px;min-width:0}
 .overlay-section h3{margin:0 0 5px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.45px}
 .live-list,.score-list,.survivor-list{display:grid;gap:2px;font-size:10px}
-.live-row{display:grid;grid-template-columns:22px minmax(88px,1fr) auto auto auto auto auto;gap:4px;align-items:center;white-space:nowrap}
+.live-row{display:grid;grid-template-columns:22px minmax(62px,1fr) auto auto auto auto auto;gap:4px;align-items:center;white-space:nowrap}
 .live-row.team-mode{grid-template-columns:22px minmax(88px,1fr) auto auto auto auto auto auto}
 .score-row,.survivor-row{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:5px;align-items:center;white-space:nowrap}
 .runner-name{overflow:hidden;text-overflow:ellipsis}
@@ -98,10 +99,10 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
 .celebrate-card{
   width:min(96vw,1100px);
   max-height:none;
-  padding:16px 16px 76px;
+  padding:7px 10px 12px;
   text-align:center;
   overflow:visible;
-  margin:auto 0;
+  margin:0;
 }
 #celeClose{
   position:fixed;
@@ -113,8 +114,8 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   box-shadow:0 3px 12px rgba(0,0,0,.35);
 }
 .celebrate-card img{
-  width:78px;height:78px;border-radius:50%;object-fit:cover;
-  border:4px solid var(--gold);margin:6px auto 10px;display:block
+  width:48px;height:48px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--gold);margin:0 auto 3px;display:block
 }
 .team-champion-faces{
   display:none;
@@ -125,6 +126,13 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   margin:8px auto 12px;
 }
 .team-champion-faces.show{display:flex}
+.celebrate-card #celeLabel{font-size:10px;line-height:1;margin:0 0 2px}
+.celebrate-card #celeWinner{font-size:16px!important;line-height:1.1;margin:0 0 3px!important}
+.team-champion-faces{gap:5px!important;margin:2px auto 4px!important}
+.team-champion-person{min-width:52px!important;gap:2px!important}
+.team-champion-person img{width:42px!important;height:42px!important;border-width:2px!important}
+.team-champion-person span{font-size:9px!important;max-width:66px!important}
+
 .team-champion-person{
   display:grid;
   justify-items:center;
@@ -146,21 +154,21 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   overflow:hidden;
   text-overflow:ellipsis;
 }
-.report-wrap{overflow-x:auto;margin-top:12px}
+.report-wrap{overflow-x:auto;margin-top:3px}
 .report-table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px;
+  font-size:10px;
   text-align:left;
 }
 .report-table th,.report-table td{
   border-bottom:1px solid rgba(255,255,255,.10);
-  padding:7px 8px;
+  padding:3px 4px;
   white-space:nowrap;
 }
 .report-table th{
   color:var(--gold);
-  font-size:11px;
+  font-size:9px;
   text-transform:uppercase;
   letter-spacing:.35px;
   position:sticky;
@@ -172,23 +180,25 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
   display:flex;align-items:center;gap:6px;font-weight:bold
 }
 .report-table .report-name img{
-  width:28px;height:28px;margin:0;border:2px solid rgba(255,255,255,.65)
+  width:20px;height:20px;margin:0;border:1px solid rgba(255,255,255,.65)
 }
 .report-summary{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:8px;
-  margin-top:10px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:3px;
+  margin-top:3px;
 }
 .report-stat{
   background:rgba(255,255,255,.045);
-  border-radius:9px;
-  padding:8px;
+  border-radius:7px;
+  padding:3px 4px;
+  font-size:9px;
 }
-.report-stat strong{display:block;color:var(--gold);font-size:18px}
+.report-stat strong{display:block;color:var(--gold);font-size:12px;line-height:1.1}
 .report-subtitle{
-  margin:14px 0 4px;
+  margin:5px 0 2px;
   text-align:left;
+  font-size:10px;
   color:var(--gold);
   font-weight:bold;
 }
@@ -196,7 +206,7 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
 @media (max-width:760px){
   body{padding:4px} .header-bar{align-items:stretch} .speed-box{min-width:0;width:100%}
   .arena-wrap{aspect-ratio:16/12;min-height:460px}
-  .overlay{right:8px;top:auto;bottom:48px;transform:none;width:calc(100% - 16px);max-height:34%;padding:8px}
+  .overlay{right:8px;top:auto;bottom:48px;transform:none;width:min(88%,350px);max-height:40%;padding:7px}
   .overlay-grid{grid-template-columns:1fr 1fr}
   .live-row,.live-row.team-mode{grid-template-columns:22px minmax(72px,1fr) auto auto auto auto}
   .optional{display:none}
@@ -630,18 +640,18 @@ function findSpawnPoint(arena, obstacles, existing, radius){
 function randomPickupKind(boostOnly){
   if(boostOnly){
     var rb = Math.random();
-    if(rb < 0.36) return "speed";
-    if(rb < 0.69) return "shield";
-    if(rb < 0.93) return "burst";
-    if(rb < 0.98) return "banana";
+    if(rb < 0.34) return "speed";
+    if(rb < 0.65) return "shield";
+    if(rb < 0.88) return "burst";
+    if(rb < 0.92) return "banana";
     return "bazooka";
   }
   var r = Math.random();
-  if(r < 0.33) return "health";
-  if(r < 0.52) return "speed";
-  if(r < 0.69) return "shield";
-  if(r < 0.85) return "burst";
-  if(r < 0.98) return "banana";
+  if(r < 0.31) return "health";
+  if(r < 0.48) return "speed";
+  if(r < 0.63) return "shield";
+  if(r < 0.78) return "burst";
+  if(r < 0.92) return "banana";
   return "bazooka";
 }
 function spawnPickup(forceX, forceY, forcedKind, boostOnly){
@@ -1397,11 +1407,7 @@ function renderDetailedBattleReport(results, title){
              f.name + '</td><td>' + f.killedBy + '</td><td>' + f.place + '</td></tr>';
     }).join('');
 
-  eliminationTableEl.innerHTML =
-    '<div class="report-subtitle">Elimination Log</div>' +
-    '<div class="report-wrap"><table class="report-table">' +
-      '<thead><tr><th>#</th><th>Time</th><th>Eliminated</th><th>By</th><th>Final Place</th></tr></thead>' +
-      '<tbody>' + eliminationRows + '</tbody></table></div>';
+  eliminationTableEl.innerHTML = '';
 }
 function renderBattleResults(results, title){
   if(results[0]) podiumEl.innerHTML = '<div class="podium">' + podiumCard(1,results[0],title || "Winner") + (results[1] ? podiumCard(2,results[1],"Runner-up") : '') + (results[2] ? podiumCard(3,results[2],"Third") : '') + '</div>';
@@ -1461,7 +1467,8 @@ function renderOverlay(force){
     var survivors = gauntletState.remaining.map(function(m,idx){ return '<div class="survivor-row"><span>'+(idx+1)+'</span><span>'+m.name+'</span><span></span></div>'; });
     sections.push('<div class="overlay-section"><h3>Survivors · Round '+gauntletState.round+'</h3><div class="survivor-list">'+survivors.join('')+'</div></div>');
   }
-  overlayEl.innerHTML = '<div class="overlay-title">'+title+'</div><div class="overlay-grid">'+sections.join('')+'</div>';
+  var powerKey = '<div class="power-key"><strong>Power-ups:</strong> + Health · » Speed · S Shield · B Burst · R Bazooka · ! Banana</div>';
+  overlayEl.innerHTML = '<div class="overlay-title">'+title+'</div>'+powerKey+'<div class="overlay-grid">'+sections.join('')+'</div>';
 }
 
 function tick(ts){ var dt=Math.min(.04, (ts-lastTime)/1000), simDt=dt*speedMultiplier; lastTime=ts; updateBattle(simDt); draw(); renderOverlay(false); if(battleState && battleState.running) raf=requestAnimationFrame(tick); }
