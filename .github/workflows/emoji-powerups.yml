@@ -13,79 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Patch current Battle Game
         shell: bash
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          p=Path('index.html')
-          s=p.read_text(encoding='utf-8')
-          before=s
-
-          # Replace the current pickup renderer with large, self-explanatory emoji.
-          marker='function drawPickup(p){'
-          start=s.index(marker)
-          brace=s.index('{', start)
-          depth=0
-          end=None
-          for i in range(brace, len(s)):
-              if s[i]=='{': depth+=1
-              elif s[i]=='}':
-                  depth-=1
-                  if depth==0:
-                      end=i+1
-                      break
-          if end is None:
-              raise SystemExit('Could not locate end of drawPickup')
-
-          new_func='''function drawPickup(p){
-  var fill = "#7ce38a", label = "❤️";
-  if(p.kind==="speed"){ fill="#ffb269"; label="⚡"; }
-  if(p.kind==="shield"){ fill="#8fb8ff"; label="🛡️"; }
-  if(p.kind==="burst"){ fill="#ff8a8a"; label="💥"; }
-  if(p.kind==="bazooka"){ fill="#ff7b54"; label="🚀"; }
-  if(p.kind==="banana"){ fill="#ffe16e"; label="🍌"; }
-  ctx.fillStyle=fill;
-  ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=2; ctx.stroke();
-  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="16px sans-serif";
-  ctx.fillText(label, p.x, p.y+0.5);
-}'''
-          s=s[:start]+new_func+s[end:]
-
-          # Remove the explanatory key; the icons now explain themselves.
-          s,n=re.subn(r'''var powerKey\s*=\s*'<div class="power-key"><strong>Power-ups:</strong>.*?</div>';''', "var powerKey = '';", s, count=1)
-          if n!=1:
-              raise SystemExit('Could not locate current power-up key')
-          s=re.sub(r'\.tv-mode \.overlay \.power-key\{[^}]*\}', '', s)
-          s=re.sub(r'(?<![A-Za-z0-9_-])\.power-key\{[^}]*\}', '', s)
-
-          for icon in ['❤️','⚡','🛡️','💥','🚀','🍌']:
-              if icon not in new_func:
-                  raise SystemExit('Missing emoji '+icon)
-          if 'Power-ups:</strong>' in s or '+ Health · » Speed' in s:
-              raise SystemExit('Old power-up key remains')
-          if s==before:
-              raise SystemExit('No changes made')
-
-          p.write_text(s,encoding='utf-8')
-          PY
-
-      - name: Check game JavaScript
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-          s=Path('index.html').read_text(encoding='utf-8')
-          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
-          Path('/tmp/battle-check.js').write_text('\n'.join(scripts),encoding='utf-8')
-          PY
+          echo 'CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAppbXBvcnQgcmUKCnAgPSBQYXRoKCJpbmRleC5odG1sIikKcyA9IHAucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCmJlZm9yZSA9IHMKCm1hcmtlciA9ICJmdW5jdGlvbiBkcmF3UGlja3VwKHApeyIKc3RhcnQgPSBzLmluZGV4KG1hcmtlcikKYnJhY2UgPSBzLmluZGV4KCJ7Iiwgc3RhcnQpCmRlcHRoID0gMAplbmQgPSBOb25lCmZvciBpIGluIHJhbmdlKGJyYWNlLCBsZW4ocykpOgogICAgaWYgc1tpXSA9PSAieyI6CiAgICAgICAgZGVwdGggKz0gMQogICAgZWxpZiBzW2ldID09ICJ9IjoKICAgICAgICBkZXB0aCAtPSAxCiAgICAgICAgaWYgZGVwdGggPT0gMDoKICAgICAgICAgICAgZW5kID0gaSArIDEKICAgICAgICAgICAgYnJlYWsKaWYgZW5kIGlzIE5vbmU6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJDb3VsZCBub3QgbG9jYXRlIGVuZCBvZiBkcmF3UGlja3VwIikKCm5ld19mdW5jID0gIiIiZnVuY3Rpb24gZHJhd1BpY2t1cChwKXsKICB2YXIgZmlsbCA9ICIjN2NlMzhhIiwgbGFiZWwgPSAi4p2k77iPIjsKICBpZihwLmtpbmQ9PT0ic3BlZWQiKXsgZmlsbD0iI2ZmYjI2OSI7IGxhYmVsPSLimqEiOyB9CiAgaWYocC5raW5kPT09InNoaWVsZCIpeyBmaWxsPSIjOGZiOGZmIjsgbGFiZWw9IvCfm6HvuI8iOyB9CiAgaWYocC5raW5kPT09ImJ1cnN0Iil7IGZpbGw9IiNmZjhhOGEiOyBsYWJlbD0i8J+SpSI7IH0KICBpZihwLmtpbmQ9PT0iYmF6b29rYSIpeyBmaWxsPSIjZmY3YjU0IjsgbGFiZWw9IvCfmoAiOyB9CiAgaWYocC5raW5kPT09ImJhbmFuYSIpeyBmaWxsPSIjZmZlMTZlIjsgbGFiZWw9IvCfjYwiOyB9CiAgY3R4LmZpbGxTdHlsZT1maWxsOwogIGN0eC5iZWdpblBhdGgoKTsgY3R4LmFyYyhwLngscC55LHAucmFkaXVzLDAsTWF0aC5QSSoyKTsgY3R4LmZpbGwoKTsKICBjdHguc3Ryb2tlU3R5bGU9InJnYmEoMCwwLDAsLjI1KSI7IGN0eC5saW5lV2lkdGg9MjsgY3R4LnN0cm9rZSgpOwogIGN0eC50ZXh0QWxpZ249ImNlbnRlciI7IGN0eC50ZXh0QmFzZWxpbmU9Im1pZGRsZSI7IGN0eC5mb250PSIxNnB4IHNhbnMtc2VyaWYiOwogIGN0eC5maWxsVGV4dChsYWJlbCwgcC54LCBwLnkrMC41KTsKfSIiIgpzID0gc1s6c3RhcnRdICsgbmV3X2Z1bmMgKyBzW2VuZDpdCgpwYXR0ZXJuID0gciIiInZhciBwb3dlcktleVxzKj1ccyonPGRpdiBjbGFzcz0icG93ZXIta2V5Ij48c3Ryb25nPlBvd2VyLXVwczo8L3N0cm9uZz4uKj88L2Rpdj4nOyIiIgpzLCBuID0gcmUuc3VibihwYXR0ZXJuLCAidmFyIHBvd2VyS2V5ID0gJyc7IiwgcywgY291bnQ9MSkKaWYgbiAhPSAxOgogICAgcmFpc2UgU3lzdGVtRXhpdCgiQ291bGQgbm90IGxvY2F0ZSBjdXJyZW50IHBvd2VyLXVwIGtleSIpCgpzID0gcmUuc3ViKHInXC50di1tb2RlIFwub3ZlcmxheSBcLnBvd2VyLWtleVx7W159XSpcfScsICcnLCBzKQpzID0gcmUuc3ViKHInKD88IVtBLVphLXowLTlfLV0pXC5wb3dlci1rZXlce1tefV0qXH0nLCAnJywgcykKCmZvciBpY29uIGluIFsi4p2k77iPIiwgIuKaoSIsICLwn5uh77iPIiwgIvCfkqUiLCAi8J+agCIsICLwn42MIl06CiAgICBpZiBpY29uIG5vdCBpbiBuZXdfZnVuYzoKICAgICAgICByYWlzZSBTeXN0ZW1FeGl0KCJNaXNzaW5nIGVtb2ppICIgKyBpY29uKQoKaWYgIlBvd2VyLXVwczo8L3N0cm9uZz4iIGluIHMgb3IgIisgSGVhbHRoIMK3IMK7IFNwZWVkIiBpbiBzOgogICAgcmFpc2UgU3lzdGVtRXhpdCgiT2xkIHBvd2VyLXVwIGtleSByZW1haW5zIikKaWYgcyA9PSBiZWZvcmU6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJObyBjaGFuZ2VzIG1hZGUiKQoKcC53cml0ZV90ZXh0KHMsIGVuY29kaW5nPSJ1dGYtOCIpCgpzY3JpcHRzID0gcmUuZmluZGFsbChyJzxzY3JpcHQoPzpcc1tePl0qKT8+KC4qPyk8L3NjcmlwdD4nLCBzLCByZS5TIHwgcmUuSSkKUGF0aCgiL3RtcC9iYXR0bGUtY2hlY2suanMiKS53cml0ZV90ZXh0KCJcbiIuam9pbihzY3JpcHRzKSwgZW5jb2Rpbmc9InV0Zi04IikKcHJpbnQoIlVwZGF0ZWQgcGlja3VwIGljb25zIHRvIGVtb2ppIGFuZCByZW1vdmVkIHBvd2VyLXVwIGtleS4iKQo=' | base64 -d > /tmp/patch.py
+          python /tmp/patch.py
           node --check /tmp/battle-check.js
-
       - name: Commit and clean helper
         shell: bash
         run: |
