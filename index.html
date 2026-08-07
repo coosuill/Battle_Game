@@ -1013,6 +1013,7 @@ function updateBattle(dt){
       var dx = target.x - f.x, dy = target.y - f.y, d = Math.sqrt(dx*dx+dy*dy) || 1;
       if(finalDuel) { tx = target.x; ty = target.y; }
       else if(finalDuel) { tx = target.x; ty = target.y; }
+      else if(finalDuel) { tx = target.x; ty = target.y; }
       else if(d > preferred + 15) { tx = target.x; ty = target.y; }
       else if(d < preferred - 20) { tx = f.x - dx; ty = f.y - dy; }
       else {
