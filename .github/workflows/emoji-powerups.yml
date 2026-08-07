@@ -1,4 +1,4 @@
-name: Inspect battle pickup renderer
+name: Apply emoji power-ups
 
 on:
   push:
@@ -6,39 +6,92 @@ on:
       - '.github/workflows/emoji-powerups.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  inspect:
+  patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Show pickup drawing code
+
+      - name: Patch current Battle Game
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          before=s
+
+          # Replace the current pickup renderer with large, self-explanatory emoji.
+          marker='function drawPickup(p){'
+          start=s.index(marker)
+          brace=s.index('{', start)
+          depth=0
+          end=None
+          for i in range(brace, len(s)):
+              if s[i]=='{': depth+=1
+              elif s[i]=='}':
+                  depth-=1
+                  if depth==0:
+                      end=i+1
+                      break
+          if end is None:
+              raise SystemExit('Could not locate end of drawPickup')
+
+          new_func='''function drawPickup(p){
+  var fill = "#7ce38a", label = "❤️";
+  if(p.kind==="speed"){ fill="#ffb269"; label="⚡"; }
+  if(p.kind==="shield"){ fill="#8fb8ff"; label="🛡️"; }
+  if(p.kind==="burst"){ fill="#ff8a8a"; label="💥"; }
+  if(p.kind==="bazooka"){ fill="#ff7b54"; label="🚀"; }
+  if(p.kind==="banana"){ fill="#ffe16e"; label="🍌"; }
+  ctx.fillStyle=fill;
+  ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=2; ctx.stroke();
+  ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="16px sans-serif";
+  ctx.fillText(label, p.x, p.y+0.5);
+}'''
+          s=s[:start]+new_func+s[end:]
+
+          # Remove the explanatory key; the icons now explain themselves.
+          s,n=re.subn(r'''var powerKey\s*=\s*'<div class="power-key"><strong>Power-ups:</strong>.*?</div>';''', "var powerKey = '';", s, count=1)
+          if n!=1:
+              raise SystemExit('Could not locate current power-up key')
+          s=re.sub(r'\.tv-mode \.overlay \.power-key\{[^}]*\}', '', s)
+          s=re.sub(r'(?<![A-Za-z0-9_-])\.power-key\{[^}]*\}', '', s)
+
+          for icon in ['❤️','⚡','🛡️','💥','🚀','🍌']:
+              if icon not in new_func:
+                  raise SystemExit('Missing emoji '+icon)
+          if 'Power-ups:</strong>' in s or '+ Health · » Speed' in s:
+              raise SystemExit('Old power-up key remains')
+          if s==before:
+              raise SystemExit('No changes made')
+
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Check game JavaScript
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           s=Path('index.html').read_text(encoding='utf-8')
-          needles=['battleState.pickups.forEach','pickups.forEach','fillText("+"','fillText("»"','fillText("S"','fillText("B"','fillText("R"','fillText("!"']
-          seen=[]
-          for needle in needles:
-              start=0
-              while True:
-                  i=s.find(needle,start)
-                  if i<0: break
-                  if not any(abs(i-x)<900 for x in seen):
-                      seen.append(i)
-                      a=max(0,i-900); b=min(len(s),i+1900)
-                      print('\n===== '+needle+' @ '+str(i)+' =====\n')
-                      print(s[a:b].replace('\n',' '))
-                  start=i+1
-          # Also show functions whose source contains both pickup and fillText.
-          for m in re.finditer(r'function\s+([A-Za-z0-9_$]+)\s*\([^)]*\)\s*\{',s):
-              a=m.start(); nxt=s.find('\nfunction ',m.end())
-              if nxt<0: nxt=min(len(s),a+12000)
-              block=s[a:nxt]
-              if 'pickup' in block.lower() and 'fillText' in block and len(block)<12000:
-                  print('\n===== FUNCTION '+m.group(1)+' =====\n')
-                  print(block[:10000].replace('\n',' '))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>',s,re.S|re.I)
+          Path('/tmp/battle-check.js').write_text('\n'.join(scripts),encoding='utf-8')
           PY
+          node --check /tmp/battle-check.js
+
+      - name: Commit and clean helper
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/emoji-powerups.yml
+          git add index.html .github/workflows/emoji-powerups.yml
+          git commit -m "Use emoji icons for battle power-ups"
+          git push
