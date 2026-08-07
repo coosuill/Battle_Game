@@ -1,0 +1,26 @@
+name: Create Battle rollback tag
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Create exact baseline tag
+        run: |
+          git tag -f battle-silk-baseline-2026-08-07 475c83a91d9cbdd9df1ec7c0c8a61e59ec2a8410
+          git push -f origin battle-silk-baseline-2026-08-07
+      - name: Remove helper
+        run: rm -f .github/workflows/fix-battle-baseline-tag.yml
+      - name: Commit cleanup
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Remove Battle rollback helper" || true
+          git push origin main
