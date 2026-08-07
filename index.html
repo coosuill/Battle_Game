@@ -53,6 +53,7 @@ canvas{display:block;width:100%;height:100%;border-radius:14px}
 .tag.team-emerald{background:rgba(46,160,67,.25);color:#aef0be;min-width:32px;text-align:center}
 .tag.team-gold{background:rgba(255,209,102,.2);color:#ffe7a0;min-width:32px;text-align:center}
 .tag.team-navy{background:rgba(72,118,255,.2);color:#aec5ff;min-width:32px;text-align:center}
+.tag.team-crimson{background:rgba(220,55,75,.22);color:#ffb7c1;min-width:32px;text-align:center}
 .power-tank{background:rgba(120,120,120,.22);color:#f1f1f1}
 .power-sprinter{background:rgba(255,87,34,.22);color:#ffb091}
 .power-sniper{background:rgba(99,164,255,.22);color:#cae3ff}
@@ -302,7 +303,7 @@ var ABILITIES = [
   {name:"Stayer"},
   {name:"Lucky Break"}
 ];
-var TEAM_NAMES = ["Emerald","Gold","Navy"];
+var TEAM_NAMES = ["Emerald","Gold","Navy","Crimson"];
 var ABILITIES = [
   {name:"Tank", cls:"power-tank"},
   {name:"Sprinter", cls:"power-sprinter"},
@@ -359,8 +360,8 @@ function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
 function dist(ax,ay,bx,by){ var dx=ax-bx, dy=ay-by; return Math.sqrt(dx*dx + dy*dy); }
 function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function shuffle(arr){ var a=arr.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function shortTeam(name){ return ({Emerald:"EM", Gold:"GD", Navy:"NV"})[name] || ""; }
-function teamTagClass(name){ return ({Emerald:"team-emerald", Gold:"team-gold", Navy:"team-navy"})[name] || ""; }
+function shortTeam(name){ return ({Emerald:"EM", Gold:"GD", Navy:"NV", Crimson:"CR"})[name] || ""; }
+function teamTagClass(name){ return ({Emerald:"team-emerald", Gold:"team-gold", Navy:"team-navy", Crimson:"team-crimson"})[name] || ""; }
 function abilityTagClass(name){ var found = ABILITIES.find(function(a){ return a.name === name; }); return found ? found.cls : ""; }
 function setCommentary(text){ commentaryEl.textContent = text; }
 function updateSpeedUI(){ speedValueEl.textContent = Number(speedMultiplier).toFixed(1) + "×"; }
@@ -429,6 +430,7 @@ function sortSeasonStandings(a,b){ if(b.points!==a.points) return b.points-a.poi
 function statusText(f){
   if(!f.alive) return "OUT";
   if(f.immobilized > 0.15) return "SLIP";
+  if(f.bazookaShots > 0) return "BAZOOKA";
   if(f.shieldBoost > 0.2) return "SHLD";
   if(f.bulletBoost > 0.2) return "BURST";
   if(f.bumpFlash > 0.2) return "BUMP";
@@ -443,6 +445,7 @@ function moodText(f){
   if(f.bumpFlash > 0.2) return "😵";
   if(f.hp < f.maxHp * 0.28) return "😬";
   if(f.killFlash > 0.2) return "😎";
+  if(f.bazookaShots > 0) return "🚀";
   if(f.bulletBoost > 0.2) return "💥";
   if(f.shieldBoost > 0.2) return "🛡️";
   if(f.speedBuff > 0.2) return "🔥";
@@ -528,9 +531,9 @@ function cloneFighter(member, team){
     cooldown:rand(1.20, 1.75), attackLeft:rand(0,.8),
     alive:true, place:null, eliminations:0,
     damageDealt:0, damageTaken:0, shotsFired:0, shotsHit:0,
-    healthPickups:0, speedPickups:0, shieldPickups:0, burstPickups:0, bananaSlips:0,
+    healthPickups:0, speedPickups:0, shieldPickups:0, burstPickups:0, bazookaPickups:0, bananaSlips:0,
     survivalTime:0, killedBy:"—",
-    recentHit:0, recentHeal:0, killFlash:0, bumpFlash:0, speedBuff:0, shieldBoost:0, bulletBoost:0, immobilized:0, evade:0,
+    recentHit:0, recentHeal:0, killFlash:0, bumpFlash:0, speedBuff:0, shieldBoost:0, bulletBoost:0, bazookaShots:0, immobilized:0, evade:0,
     bumpCooldown:0, collectBias:Math.random()*0.8, preferredDistance:90 + Math.random()*50
   };
   applyAbility(f);
@@ -554,7 +557,7 @@ function randomTeamAssignments(){
   return a;
 }
 function rebuildTeamAssignments(){
-  var teams={Emerald:[],Gold:[],Navy:[]}, benched=[];
+  var teams={Emerald:[],Gold:[],Navy:[],Crimson:[]}, benched=[];
   MEMBERS.forEach(function(m){
     var c = teamState.assignments[m.name] || "None";
     if(c==="None") benched.push(m); else teams[c].push(m);
@@ -567,7 +570,7 @@ function initSeasonState(){
 }
 function initTeamState(){
   var assignments = teamState && teamState.assignments ? teamState.assignments : randomTeamAssignments();
-  teamState = {assignments:assignments, teams:{Emerald:[],Gold:[],Navy:[]}, benched:[], scores:null, complete:false, winnerTeam:null};
+  teamState = {assignments:assignments, teams:{Emerald:[],Gold:[],Navy:[],Crimson:[]}, benched:[], scores:null, complete:false, winnerTeam:null};
   rebuildTeamAssignments();
 }
 function initGauntletState(){ gauntletState = {round:0, remaining:MEMBERS.slice(), complete:false, champion:null}; }
@@ -627,17 +630,19 @@ function findSpawnPoint(arena, obstacles, existing, radius){
 function randomPickupKind(boostOnly){
   if(boostOnly){
     var rb = Math.random();
-    if(rb < 0.38) return "speed";
-    if(rb < 0.72) return "shield";
-    if(rb < 0.96) return "burst";
-    return "banana";
+    if(rb < 0.36) return "speed";
+    if(rb < 0.69) return "shield";
+    if(rb < 0.93) return "burst";
+    if(rb < 0.98) return "banana";
+    return "bazooka";
   }
   var r = Math.random();
-  if(r < 0.34) return "health";
-  if(r < 0.53) return "speed";
-  if(r < 0.70) return "shield";
-  if(r < 0.87) return "burst";
-  return "banana";
+  if(r < 0.33) return "health";
+  if(r < 0.52) return "speed";
+  if(r < 0.69) return "shield";
+  if(r < 0.85) return "burst";
+  if(r < 0.98) return "banana";
+  return "bazooka";
 }
 function spawnPickup(forceX, forceY, forcedKind, boostOnly){
   if(!battleState || battleState.pickups.length >= battleState.maxPickups) return;
@@ -669,7 +674,7 @@ function prepareBattle(participants, opts){
     fighters:fighters, mode:opts.mode || mode, running:false, finished:false, time:0, countdown:2.1,
     chaos:Number(chaosLevelEl.value || 1), arena:arena, obstacles:obstacles,
     wallCount:wallCount,
-    pickups:[], projectiles:[], splats:[], spawnPickupAt:3.0, maxPickups:6,
+    pickups:[], projectiles:[], splats:[], explosions:[], spawnPickupAt:3.0, maxPickups:6,
     duelMode:false,
     winner:null, winnerTeam:null
   };
@@ -768,18 +773,25 @@ function hasLineOfSight(x1,y1,x2,y2,pad){
     return segmentIntersectsRect(x1,y1,x2,y2,o,pad || 0);
   });
 }
-function launchProjectileAtAngle(owner, angle, speed, damage){
+function launchProjectileAtAngle(owner, angle, speed, damage, kind){
   owner.shotsFired += 1;
   battleState.projectiles.push({
     owner:owner, team:owner.team, x:owner.x, y:owner.y,
     vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
-    damage:damage, ttl:2.2, radius:5,
-    color:owner.ability==="Sniper" ? "#cae3ff" : "#ffcad4"
+    damage:damage, ttl:kind==="rocket" ? 3.0 : 2.2, radius:kind==="rocket" ? 8 : 5,
+    kind:kind || "bullet",
+    color:kind==="rocket" ? "#ff9f43" : (owner.ability==="Sniper" ? "#cae3ff" : "#ffcad4")
   });
 }
 function launchProjectile(owner, target){
   var dx=target.x-owner.x, dy=target.y-owner.y, d=Math.sqrt(dx*dx+dy*dy)||1;
   var angle = Math.atan2(dy, dx), speed=105+rand(-8,8);
+  if(owner.bazookaShots > 0){
+    owner.bazookaShots -= 1;
+    launchProjectileAtAngle(owner, angle, 82, owner.damage * 5, "rocket");
+    setCommentary(owner.name + " fires the BAZOOKA!");
+    return;
+  }
   if(owner.bulletBoost > 0.2){
     launchProjectileAtAngle(owner, angle - 0.13, speed, owner.damage * 0.82);
     launchProjectileAtAngle(owner, angle, speed + 3, owner.damage);
@@ -882,6 +894,12 @@ function applyPickupToFighter(f,p){
     setCommentary(f.name + " picks up extra bullets");
     return;
   }
+  if(p.kind==="bazooka"){
+    f.bazookaShots += 1;
+    f.bazookaPickups += 1;
+    setCommentary(f.name + " picks up the BAZOOKA!");
+    return;
+  }
   if(p.kind==="banana"){
     f.immobilized = Math.max(f.immobilized, 1.25);
     f.bananaSlips += 1;
@@ -921,6 +939,7 @@ function updateBattle(dt){
 
   b.pickups = b.pickups.filter(function(p){ p.ttl -= dt; return p.ttl > 0; });
   b.splats = b.splats.filter(function(s){ s.ttl -= dt; return s.ttl > 0; });
+  b.explosions = b.explosions.filter(function(e){ e.ttl -= dt; return e.ttl > 0; });
 
   for(var pi=b.projectiles.length-1; pi>=0; pi--){
     var pr=b.projectiles[pi];
@@ -928,15 +947,26 @@ function updateBattle(dt){
     pr.x += pr.vx * dt;
     pr.y += pr.vy * dt;
     var remove = pr.ttl <= 0;
-    if(pr.x < b.arena.x || pr.x > b.arena.x+b.arena.w || pr.y < b.arena.y || pr.y > b.arena.y+b.arena.h) remove=true;
-    if(!remove && pointInObstacle(pr.x, pr.y, b.obstacles, 0)) remove=true;
+    if(pr.x < b.arena.x || pr.x > b.arena.x+b.arena.w || pr.y < b.arena.y || pr.y > b.arena.y+b.arena.h) {
+      if(pr.kind==="rocket") b.explosions.push({x:pr.x,y:pr.y,ttl:.55,maxTtl:.55,r:30});
+      remove=true;
+    }
+    if(!remove && pointInObstacle(pr.x, pr.y, b.obstacles, 0)) {
+      if(pr.kind==="rocket") b.explosions.push({x:pr.x,y:pr.y,ttl:.55,maxTtl:.55,r:30});
+      remove=true;
+    }
     b.fighters.forEach(function(o){
       if(remove || !o.alive || o===pr.owner) return;
       if(mode==="team" && pr.team && o.team===pr.team) return;
       if(dist(pr.x,pr.y,o.x,o.y) < o.radius) {
         pr.owner.shotsHit += 1;
-        absorbDamage(o, pr.damage, pr.owner, "shot");
-        b.splats.push({x:pr.x,y:pr.y,r:11,ttl:.45,color:"rgba(255,255,255,.25)"});
+        absorbDamage(o, pr.damage, pr.owner, pr.kind==="rocket" ? "bazooka" : "shot");
+        if(pr.kind==="rocket"){
+          b.explosions.push({x:pr.x,y:pr.y,ttl:.55,maxTtl:.55,r:34});
+          setCommentary(pr.owner.name + " lands a bazooka hit on " + o.name);
+        } else {
+          b.splats.push({x:pr.x,y:pr.y,r:11,ttl:.45,color:"rgba(255,255,255,.25)"});
+        }
         remove=true;
       }
     });
@@ -971,7 +1001,8 @@ function updateBattle(dt){
       f.ability==="Collector" ||
       (pickupInfo.pickup.kind==="speed" && f.speedBuff < 0.25) ||
       (pickupInfo.pickup.kind==="shield" && f.shieldBoost < 0.25) ||
-      (pickupInfo.pickup.kind==="burst" && f.bulletBoost < 0.25)
+      (pickupInfo.pickup.kind==="burst" && f.bulletBoost < 0.25) ||
+      (pickupInfo.pickup.kind==="bazooka" && f.bazookaShots < 1)
     ) && (pickupInfo.d < enemy.d * (1.1 + f.collectBias * 0.5) || !target);
 
     var tx = f.x, ty = f.y;
@@ -1154,7 +1185,7 @@ function finishBattle(){
     teamState.complete = true;
     teamState.winnerTeam = Object.keys(survivingTeams)[0] || b.winnerTeam || (results[0] ? results[0].team : null);
 
-    var teamStats = {Emerald:0, Gold:0, Navy:0};
+    var teamStats = {Emerald:0, Gold:0, Navy:0, Crimson:0};
     TEAM_NAMES.forEach(function(t){
       teamStats[t] = results.filter(function(f){ return f.team === t && f.alive; }).length;
     });
@@ -1198,7 +1229,7 @@ function renderDetailedBattleReport(results, title){
   var totalKills = results.reduce(function(sum,f){ return sum + f.eliminations; }, 0);
   var totalDamage = results.reduce(function(sum,f){ return sum + f.damageDealt; }, 0);
   var totalPickups = results.reduce(function(sum,f){
-    return sum + f.healthPickups + f.speedPickups + f.shieldPickups + f.burstPickups;
+    return sum + f.healthPickups + f.speedPickups + f.shieldPickups + f.burstPickups + f.bazookaPickups;
   }, 0);
   var longest = results.slice().sort(function(a,b){ return b.survivalTime - a.survivalTime; })[0];
 
@@ -1216,7 +1247,7 @@ function renderDetailedBattleReport(results, title){
       var hits = members.reduce(function(sum,f){ return sum + f.shotsHit; }, 0);
       var accuracy = shots ? Math.round((hits / shots) * 100) + '%' : '0%';
       var pickups = members.reduce(function(sum,f){
-        return sum + f.healthPickups + f.speedPickups + f.shieldPickups + f.burstPickups;
+        return sum + f.healthPickups + f.speedPickups + f.shieldPickups + f.burstPickups + f.bazookaPickups;
       }, 0);
       var bestPlace = Math.min.apply(null, members.map(function(f){ return f.place; }));
 
@@ -1482,13 +1513,30 @@ function drawPickup(p){
   if(p.kind==="speed"){ fill="#ffb269"; label="»"; textColor="#321"; }
   if(p.kind==="shield"){ fill="#8fb8ff"; label="S"; textColor="#123"; }
   if(p.kind==="burst"){ fill="#ff8a8a"; label="B"; textColor="#311"; }
+  if(p.kind==="bazooka"){ fill="#ff7b54"; label="R"; textColor="#321"; }
   if(p.kind==="banana"){ fill="#ffe16e"; label="!"; textColor="#543"; }
   ctx.fillStyle=fill;
   ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill();
   ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=2; ctx.stroke();
   ctx.fillStyle=textColor; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.font="bold 11px Arial"; ctx.fillText(label, p.x, p.y+0.5);
 }
-function drawProjectile(pr){ ctx.fillStyle=pr.color; ctx.beginPath(); ctx.arc(pr.x,pr.y,pr.radius,0,Math.PI*2); ctx.fill(); }
+function drawProjectile(pr){
+  ctx.fillStyle=pr.color;
+  ctx.beginPath(); ctx.arc(pr.x,pr.y,pr.radius,0,Math.PI*2); ctx.fill();
+  if(pr.kind==="rocket"){
+    ctx.fillStyle="rgba(255,225,120,.75)";
+    ctx.beginPath(); ctx.arc(pr.x-pr.vx*.035,pr.y-pr.vy*.035,4,0,Math.PI*2); ctx.fill();
+  }
+}
+function drawExplosion(e){
+  var prog = 1 - (e.ttl / e.maxTtl);
+  var rr = 8 + e.r * prog;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, 1-prog);
+  ctx.fillStyle="#ffb347"; ctx.beginPath(); ctx.arc(e.x,e.y,rr,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle="#fff08a"; ctx.beginPath(); ctx.arc(e.x,e.y,rr*.48,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
 function drawSplat(s){ ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(s.x,s.y,s.r*(0.4+0.6*s.ttl),0,Math.PI*2); ctx.fill(); }
 
 function drawFighter(f){
@@ -1513,7 +1561,7 @@ function drawFighter(f){
   ctx.beginPath(); ctx.arc(f.x,f.y,r,0,Math.PI*2); ctx.stroke();
 
   if(mode==="team" && f.team) {
-    ctx.fillStyle = f.team==="Emerald" ? "#6ee38a" : (f.team==="Gold" ? "#ffd166" : "#9bb4ff");
+    ctx.fillStyle = f.team==="Emerald" ? "#6ee38a" : (f.team==="Gold" ? "#ffd166" : (f.team==="Navy" ? "#9bb4ff" : "#ff7b8c"));
     ctx.beginPath(); ctx.arc(f.x + r*0.65, f.y - r*0.65, 6, 0, Math.PI*2); ctx.fill();
   }
 
@@ -1536,6 +1584,7 @@ function draw(){
   battleState.obstacles.forEach(drawObstacle);
   battleState.pickups.forEach(drawPickup);
   battleState.splats.forEach(drawSplat);
+  battleState.explosions.forEach(drawExplosion);
   battleState.projectiles.forEach(drawProjectile);
 
   var drawOrder = battleState.fighters.slice().sort(function(a,b){ if(a.alive!==b.alive) return a.alive ? -1 : 1; return a.y - b.y; });
