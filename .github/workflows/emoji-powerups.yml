@@ -47,8 +47,8 @@ jobs:
           if old not in s:
               raise SystemExit('Expected statusText block not found')
           s = s.replace(old, new, 1)
-          # The arena pickups should already be emoji-based in the saved baseline.
-          required = ['label="❤️"', 'label="⚡"', 'label="🛡️"', 'label="💥"', 'label="🚀"', 'label="🍌"']
+          # Arena pickups are already emoji-based in the saved baseline; verify the mappings remain.
+          required = ['label = "❤️"', 'label="⚡"', 'label="🛡️"', 'label="💥"', 'label="🚀"', 'label="🍌"']
           missing = [x for x in required if x not in s]
           if missing:
               raise SystemExit('Missing arena emoji pickup mappings: ' + ', '.join(missing))
