@@ -440,14 +440,14 @@ function sortSeasonStandings(a,b){ if(b.points!==a.points) return b.points-a.poi
 
 function statusText(f){
   if(!f.alive) return "OUT";
-  if(f.immobilized > 0.15) return "SLIP";
-  if(f.bazookaShots > 0) return "BAZOOKA";
-  if(f.shieldBoost > 0.2) return "SHLD";
-  if(f.bulletBoost > 0.2) return "BURST";
+  if(f.immobilized > 0.15) return "🍌";
+  if(f.bazookaShots > 0) return "🚀";
+  if(f.shieldBoost > 0.2) return "🛡️";
+  if(f.bulletBoost > 0.2) return "💥";
   if(f.bumpFlash > 0.2) return "BUMP";
-  if(f.recentHeal > 0.2) return "HEAL";
+  if(f.recentHeal > 0.2) return "❤️";
   if(f.recentHit > 0.2) return "HIT";
-  if(f.speedBuff > 0.2) return "FAST";
+  if(f.speedBuff > 0.2) return "⚡";
   return "";
 }
 function moodText(f){
