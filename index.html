@@ -443,7 +443,7 @@ function statusText(f){
   if(f.immobilized > 0.15) return "🍌";
   if(f.bazookaShots > 0) return "🚀";
   if(f.shieldBoost > 0.2) return "🛡️";
-  if(f.bulletBoost > 0.2) return "💥";
+  if(f.bulletBoost > 0) return "💥";
   if(f.bumpFlash > 0.2) return "BUMP";
   if(f.recentHeal > 0.2) return "❤️";
   if(f.recentHit > 0.2) return "HIT";
@@ -457,7 +457,7 @@ function moodText(f){
   if(f.hp < f.maxHp * 0.28) return "😬";
   if(f.killFlash > 0.2) return "😎";
   if(f.bazookaShots > 0) return "🚀";
-  if(f.bulletBoost > 0.2) return "💥";
+  if(f.bulletBoost > 0) return "💥";
   if(f.shieldBoost > 0.2) return "🛡️";
   if(f.speedBuff > 0.2) return "🔥";
   if(f.recentHeal > 0.2) return "💚";
@@ -803,10 +803,11 @@ function launchProjectile(owner, target){
     setCommentary("🚀 " + owner.name + " FIRES THE BAZOOKA!");
     return;
   }
-  if(owner.bulletBoost > 0.2){
+  if(owner.bulletBoost > 0){
     launchProjectileAtAngle(owner, angle - 0.13, speed, owner.damage * 0.82);
     launchProjectileAtAngle(owner, angle, speed + 3, owner.damage);
     launchProjectileAtAngle(owner, angle + 0.13, speed, owner.damage * 0.82);
+    owner.bulletBoost = Math.max(0, owner.bulletBoost - 1);
   } else {
     launchProjectileAtAngle(owner, angle, speed, owner.damage);
   }
@@ -900,13 +901,13 @@ function applyPickupToFighter(f,p){
     return;
   }
   if(p.kind==="burst"){
-    f.bulletBoost = Math.max(f.bulletBoost, 6.0);
+    f.bulletBoost = 4;
     f.burstPickups += 1;
     setCommentary(f.name + " picks up extra bullets");
     return;
   }
   if(p.kind==="bazooka"){
-    f.bazookaShots += 1;
+    f.bazookaShots += 1; // persists until fired
     f.bazookaPickups += 1;
     setCommentary("🚀 " + f.name + " HAS THE BAZOOKA!");
     return;
@@ -991,7 +992,6 @@ function updateBattle(dt){
     f.bumpFlash = Math.max(0, f.bumpFlash - dt);
     f.speedBuff = Math.max(0, f.speedBuff - dt);
     f.shieldBoost = Math.max(0, f.shieldBoost - dt);
-    f.bulletBoost = Math.max(0, f.bulletBoost - dt);
     f.immobilized = Math.max(0, f.immobilized - dt);
     f.bumpCooldown = Math.max(0, f.bumpCooldown - dt);
     if(!f.alive) return;
@@ -1012,7 +1012,7 @@ function updateBattle(dt){
       f.ability==="Collector" ||
       (pickupInfo.pickup.kind==="speed" && f.speedBuff < 0.25) ||
       (pickupInfo.pickup.kind==="shield" && f.shieldBoost < 0.25) ||
-      (pickupInfo.pickup.kind==="burst" && f.bulletBoost < 0.25) ||
+      (pickupInfo.pickup.kind==="burst" && f.bulletBoost <= 0) ||
       (pickupInfo.pickup.kind==="bazooka" && f.bazookaShots < 1)
     ) && (pickupInfo.d < enemy.d * (1.1 + f.collectBias * 0.5) || !target);
 
@@ -1091,7 +1091,7 @@ function updateBattle(dt){
 
     if(target && f.attackLeft <= 0 && enemy.d <= f.range && f.immobilized <= 0.05 && hasLineOfSight(f.x, f.y, target.x, target.y, 2)) {
       launchProjectile(f, target);
-      f.attackLeft = (f.bulletBoost > 0.2 ? f.cooldown * 0.68 : f.cooldown) * rand(1.05, 1.40);
+      f.attackLeft = (f.bulletBoost > 0 ? f.cooldown * 0.68 : f.cooldown) * rand(1.05, 1.40);
     }
 
     // pickup collect
