@@ -1,0 +1,70 @@
+name: Apply emoji powerups
+
+on:
+  push:
+    paths:
+      - '.github/workflows/emoji-powerups.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply emoji powerups
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''function statusText(f){
+            if(!f.alive) return "OUT";
+            if(f.immobilized > 0.15) return "SLIP";
+            if(f.bazookaShots > 0) return "BAZOOKA";
+            if(f.shieldBoost > 0.2) return "SHLD";
+            if(f.bulletBoost > 0.2) return "BURST";
+            if(f.bumpFlash > 0.2) return "BUMP";
+            if(f.recentHeal > 0.2) return "HEAL";
+            if(f.recentHit > 0.2) return "HIT";
+            if(f.speedBuff > 0.2) return "FAST";
+            return "";
+          }'''
+          new = '''function statusText(f){
+            if(!f.alive) return "OUT";
+            if(f.immobilized > 0.15) return "🍌";
+            if(f.bazookaShots > 0) return "🚀";
+            if(f.shieldBoost > 0.2) return "🛡️";
+            if(f.bulletBoost > 0.2) return "💥";
+            if(f.bumpFlash > 0.2) return "BUMP";
+            if(f.recentHeal > 0.2) return "❤️";
+            if(f.recentHit > 0.2) return "HIT";
+            if(f.speedBuff > 0.2) return "⚡";
+            return "";
+          }'''
+          if old not in s:
+              raise SystemExit('Expected statusText block not found')
+          s = s.replace(old, new, 1)
+          # The arena pickups should already be emoji-based in the saved baseline.
+          required = ['label="❤️"', 'label="⚡"', 'label="🛡️"', 'label="💥"', 'label="🚀"', 'label="🍌"']
+          missing = [x for x in required if x not in s]
+          if missing:
+              raise SystemExit('Missing arena emoji pickup mappings: ' + ', '.join(missing))
+          # Ensure no explanatory power-up key remains.
+          if 'Power-ups:</strong>' in s or 'class="power-key"' in s:
+              raise SystemExit('Power-up key still present unexpectedly')
+          p.write_text(s, encoding='utf-8')
+          PY
+          sed -n '/<script>/,/<\/script>/p' index.html | sed '1d;$d' > /tmp/battle.js
+          node --check /tmp/battle.js
+      - name: Commit and clean helper
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .github/workflows/emoji-powerups.yml
+          git add index.html .github/workflows/emoji-powerups.yml
+          git commit -m "Use emoji powerup indicators"
+          git push
